@@ -1,0 +1,310 @@
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>
+   Weather App
+  </title>
+  <script src="https://cdn.tailwindcss.com">
+  </script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+  <style>
+   body {
+            font-family: 'Arial', sans-serif;
+            background-color: #ffffff;
+            color: #000000;
+        }
+    .dark-mode {
+        background-color: #1e3a8a;
+        color: #ffffff;
+    }
+    .dark-mode select, .dark-mode input {
+        color: #ffffff;
+        background-color: #1e3a8a;
+    }
+    .dark-mode button {
+        background-color: #2563eb;
+    }
+    .dark-mode button:hover {
+        background-color: #60a5fa;
+    }
+    .dark-mode .box {
+        background-color: #3b82f6;
+    }
+    .dark-mode .card {
+        background-color: #2563eb;
+    }
+    .dark-mode .convert-box {
+        background-color: #60a5fa;
+    }
+    select, input {
+        color: #000000;
+        background-color: #e5e7eb;
+    }
+    button {
+        background-color: #6b7280;
+    }
+    button:hover {
+        background-color: #d1d5db;
+    }
+    .box {
+        background-color: #f3f4f6;
+    }
+    .card {
+        background-color: #d1d5db;
+    }
+    .convert-box {
+        background-color: #e5e7eb;
+    }
+  </style>
+  <script>
+    function convertTemperature() {
+        const temp = parseFloat(document.getElementById('tempInput').value);
+        const unit = document.getElementById('unitSelect').value;
+        let convertedTemp;
+
+        if (unit === 'C') {
+            convertedTemp = temp;
+        } else if (unit === 'F') {
+            convertedTemp = (temp * 9/5) + 32;
+        } else if (unit === 'K') {
+            convertedTemp = temp + 273.15;
+        }
+
+        document.getElementById('convertedTemp').innerText = `Converted Temperature: ${convertedTemp.toFixed(2)}° ${unit}`;
+    }
+
+    async function fetchWeather() {
+        const location = document.getElementById('locationInput').value;
+        const response = await fetch(`https://api.weatherapi.com/v1/forecast.json?key=YOUR_API_KEY&q=${location}&days=7`);
+        const data = await response.json();
+        document.getElementById('todayWeather').innerText = `${data.current.temp_c}° | ${data.current.temp_f}°`;
+        const forecast = data.forecast.forecastday;
+        document.getElementById('forecast').innerHTML = forecast.map(day => `
+            <div class="flex justify-between items-center mb-2">
+                <span>${new Date(day.date).toLocaleDateString('en-US', { weekday: 'long' })}</span>
+                <div class="flex items-center">
+                    <i class="fas fa-${day.day.condition.text.toLowerCase().includes('sun') ? 'sun' : 'cloud'} mr-2"></i>
+                    <span>${day.day.maxtemp_c}° | ${day.day.mintemp_c}°</span>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function toggleMode() {
+        const body = document.body;
+        const modeButton = document.getElementById('modeButton');
+        body.classList.toggle('dark-mode');
+        if (body.classList.contains('dark-mode')) {
+            modeButton.innerHTML = '<i class="fas fa-sun"></i>';
+        } else {
+            modeButton.innerHTML = '<i class="fas fa-moon"></i>';
+        }
+    }
+  </script>
+ </head>
+ <body class="p-4">
+  <div class="max-w-md mx-auto box rounded-lg p-4 relative">
+   <div class="text-center mb-4">
+    <h1 class="text-xl font-bold">
+     Know Weather
+    </h1>
+   </div>
+   <button class="absolute top-4 right-4 bg-gray-300 p-2 rounded" id="modeButton" onclick="toggleMode()">
+    <i class="fas fa-moon">
+    </i>
+   </button>
+   <div class="convert-box rounded-lg p-4 mb-4">
+    <div class="mb-4">
+     <label for="locationInput" class="block mb-2">Enter Location:</label>
+     <input class="w-full p-2 rounded" id="locationInput" placeholder="Enter location" type="text"/>
+    </div>
+    <div class="mb-4">
+     <label for="dateInput" class="block mb-2">Select Date:</label>
+     <input class="w-full p-2 rounded" id="dateInput" placeholder="Select date" type="date"/>
+    </div>
+    <div class="mb-4">
+     <label for="tempInput" class="block mb-2">Enter Today's Temperature (in Celsius):</label>
+     <input class="w-full p-2 rounded" id="tempInput" placeholder="Enter temperature" type="number"/>
+    </div>
+    <div class="mb-4">
+     <label for="unitSelect" class="block mb-2">Select Unit:</label>
+     <select class="w-full p-2 rounded" id="unitSelect">
+      <option value="C">Celsius</option>
+      <option value="F">Fahrenheit</option>
+      <option value="K">Kelvin</option>
+     </select>
+    </div>
+    <button class="w-full p-2 rounded" onclick="convertTemperature()">Convert Temperature</button>
+    <div class="mt-4" id="convertedTemp"></div>
+   </div>
+   <div class="card rounded-lg p-4 mb-4">
+    <div class="flex justify-between items-center mb-2">
+     <span>
+      Yesterday
+     </span>
+     <span>
+      26° | 14°
+     </span>
+    </div>
+    <div class="flex justify-between items-center mb-2">
+     <span>
+      Today
+     </span>
+     <div class="flex items-center">
+      <i class="fas fa-sun mr-2">
+      </i>
+      <span id="todayWeather">
+       28° | 13°
+      </span>
+     </div>
+    </div>
+    <div id="forecast">
+     <!-- Forecast data will be inserted here -->
+    </div>
+   </div>
+   <div class="grid grid-cols-2 gap-4 mb-4">
+    <div class="card rounded-lg p-4 text-center">
+     <div class="text-sm">
+      UV Index
+     </div>
+     <div class="text-lg font-bold">
+      Low
+     </div>
+    </div>
+    <div class="card rounded-lg p-4 text-center">
+     <div class="text-sm">
+      Humidity
+     </div>
+     <div class="text-lg font-bold">
+      63%
+     </div>
+    </div>
+    <div class="card rounded-lg p-4 text-center">
+     <div class="text-sm">
+      Wind
+     </div>
+     <div class="text-lg font-bold">
+      → 5 km/h
+     </div>
+    </div>
+    <div class="card rounded-lg p-4 text-center">
+     <div class="text-sm">
+      Dew Point
+     </div>
+     <div class="text-lg font-bold">
+      12°
+     </div>
+    </div>
+    <div class="card rounded-lg p-4 text-center">
+     <div class="text-sm">
+      Pressure
+     </div>
+     <div class="text-lg font-bold">
+      1014.9 mb
+     </div>
+    </div>
+    <div class="card rounded-lg p-4 text-center">
+     <div class="text-sm">
+      Visibility
+     </div>
+     <div class="text-lg font-bold">
+      3.22 km
+     </div>
+    </div>
+   </div>
+   <div class="card rounded-lg p-4 mb-4 text-center">
+    <div class="flex justify-between items-center mb-2">
+     <div>
+      <i class="fas fa-sun">
+      </i>
+      <span>
+       Sunrise
+      </span>
+     </div>
+     <div class="font-bold">
+      7:02 am
+     </div>
+    </div>
+    <div class="flex justify-between items-center">
+     <div>
+      <i class="fas fa-moon">
+      </i>
+      <span>
+       Sunset
+      </span>
+     </div>
+     <div class="font-bold">
+      6:07 pm
+     </div>
+    </div>
+   </div>
+   <div class="card rounded-lg p-4 mb-4 text-center">
+    <div class="flex justify-between items-center mb-2">
+     <div>
+      <i class="fas fa-moon">
+      </i>
+      <span>
+       Moonset
+      </span>
+     </div>
+     <div class="font-bold">
+      6:19 am
+     </div>
+    </div>
+    <div class="flex justify-between items-center">
+     <div>
+      <i class="fas fa-moon">
+      </i>
+      <span>
+       Moonrise
+      </span>
+     </div>
+     <div class="font-bold">
+      4:58 pm
+     </div>
+    </div>
+    <div class="mt-2">
+     Waxing gibbous
+    </div>
+   </div>
+   <div class="grid grid-cols-3 gap-4 mb-4">
+    <div class="card rounded-lg p-4 text-center">
+     <div class="text-sm">
+      Pollen
+     </div>
+     <div class="text-lg font-bold">
+      Moderate
+     </div>
+    </div>
+    <div class="card rounded-lg p-4 text-center">
+     <div class="text-sm">
+      Running
+     </div>
+     <div class="text-lg font-bold">
+      Very Poor
+     </div>
+    </div>
+    <div class="card rounded-lg p-4 text-center">
+     <div class="text-sm">
+      Driving difficulty
+     </div>
+     <div class="text-lg font-bold">
+      None
+     </div>
+    </div>
+   </div>
+   <div class="text-center text-sm">
+    <div>
+     The Weather Channel
+    </div>
+    <div>
+     Updated 11/02, 9:51 am
+    </div>
+   </div>
+  </div>
+  <script>
+    document.getElementById('locationInput').addEventListener('change', fetchWeather);
+  </script>
+ </body>
+</html>
